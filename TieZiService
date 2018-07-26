@@ -1,0 +1,46 @@
+package com.framework.modules.bbs.service;
+
+import java.util.List;
+import java.util.Map;
+
+import com.framework.exception.BusinessException;
+import com.framework.modules.article.modelandmapping.Article;
+import com.framework.modules.article.modelandmapping.Check;
+import com.framework.modules.bbs.modelandmapping.TieZi;
+
+public interface TieZiService {
+	/**
+	 * @Method_Name: add
+	 * @Description: 新增
+	
+	 */
+	void add(TieZi tieZi) throws BusinessException;
+	/**
+	 * @Method_Name: edit
+	 * @Description: 编辑	 
+	 */
+	void edit(TieZi tieZi) throws BusinessException;
+	/**
+	 * @Method_Name: delete
+	 * @Description: 删除
+
+	 */
+	void delete(String id) throws BusinessException;
+	/**
+	 * @Method_Name: getOneById
+	 * @Description: 根据文章id查询一条信息
+
+	 */
+	Map<String, Object> getOneById(String id) throws BusinessException;
+	/**
+	 * @Method_Name: queryInfos
+	 * @Description: 动态查询信息
+
+	 */
+	List<Map<String, Object>> queryInfos() throws BusinessException;
+	/**
+	 * @Method_Name: queryInfosNumByColumnName
+	 * @Description: (前台页面用的)查询相应的信息条数
+	 */
+	Map<String, Object> queryInfosNum() throws BusinessException;
+}
