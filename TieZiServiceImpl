@@ -1,0 +1,120 @@
+package com.framework.modules.bbs.service.impl;
+
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.framework.exception.BusinessException;
+import com.framework.exception.QueryException;
+import com.framework.exception.TransFailException;
+import com.framework.modules.bbs.dao.TieZiDao;
+import com.framework.modules.bbs.modelandmapping.TieZi;
+import com.framework.modules.bbs.service.TieZiService;
+import com.framework.util.common.StrUtil;
+@Service(value="tieZiService")
+@Transactional
+public class TieZiServiceImpl implements TieZiService {
+	@Autowired
+	private TieZiDao tieZiDao;
+
+	@Override
+	public void add(TieZi tieZi) throws BusinessException {
+		if (StrUtil.isNotBlank(tieZi)) {
+			try {
+				tieZiDao.add(tieZi);
+			} catch (TransFailException e) {
+			}
+		} else {
+			throw new BusinessException("新增帖子信息时，传入的参数为空！");
+		}
+	}
+
+	@Override
+	public void edit(TieZi tieZi) throws BusinessException {
+		if (StrUtil.isNotBlank(tieZi) && StrUtil.isNotBlank(tieZi.getId())) {
+			try {
+				TieZi ar = tieZiDao.getOneById(tieZi.getId().toString());
+				if (StrUtil.isNotBlank(ar)) {
+					tieZiDao.edit(tieZi);
+				}
+			} catch (TransFailException e) {
+				throw e;
+			} catch (QueryException e) {
+				throw e;
+			}
+		} else {
+			throw new BusinessException("编辑帖子信息时，传入的参数为空！");
+		}
+	}
+
+	@Override
+	public void delete(String id) throws BusinessException {
+		if (StrUtil.isNotBlank(id)) {
+			try {
+				TieZi ar = tieZiDao.getOneById(id);
+				if (StrUtil.isNotBlank(ar)) {
+					tieZiDao.delete(id);//删除帖子
+				}
+			} catch (TransFailException e) {
+				throw e;
+			} catch (QueryException e) {
+				throw e;
+			}
+		} else {
+			throw new BusinessException("删除帖子信息时，传入的参数为空！");
+		}
+	}
+
+	@Override
+	public Map<String, Object> getOneById(String id) throws BusinessException {
+		Map<String, Object> map = null;
+		if (StrUtil.isNotBlank(id)) {
+			StringBuffer sql = new StringBuffer();
+			sql.append("select * from bbs_tiezi where 1=1 ");
+			sql.append("and id='");
+			sql.append(id+"'");
+			try {
+				map = tieZiDao.getOneBySql(sql.toString());
+			} catch (BusinessException e) {
+				throw e;
+			}
+		} else {
+			throw new BusinessException("根据项目id查询一条信息时，传入的参数为空！");
+		}
+		
+		return map;
+	}
+
+	@Override
+	public List<Map<String, Object>> queryInfos() throws BusinessException {
+		List<Map<String, Object>> list = null;
+		StringBuffer sql = new StringBuffer();
+		sql.append("select * from bbs_tiezi ORDER BY createtime DESC");
+		try {
+			list = tieZiDao.queryInfosList(sql.toString());
+		} catch (QueryException e) {
+			throw e;
+		}
+		return list;
+	}
+
+	@Override
+	public Map<String, Object> queryInfosNum() throws BusinessException {
+		Map<String, Object> map = null;
+		StringBuffer sql = new StringBuffer();
+		sql.append("SELECT COUNT(*) as count FROM  bbs_tiezi ");
+		try {
+			map = tieZiDao.getOneBySql(sql.toString());
+		} catch (QueryException e) {
+			throw e;
+		}
+		return map;
+	}
+
+
+
+
+}
