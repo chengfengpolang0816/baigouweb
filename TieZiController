@@ -1,0 +1,153 @@
+package com.framework.modules.bbs.controllet;
+
+import java.util.List;
+import java.util.Map;
+import javax.servlet.http.HttpServletRequest;
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.ModelMap;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+import com.framework.exception.BusinessException;
+import com.framework.modules.bbs.modelandmapping.TieZi;
+import com.framework.modules.bbs.service.TieZiService;
+import com.framework.modules.system.modelandmapping.SysUser;
+import com.framework.util.common.ContextUtil;
+import com.framework.util.common.DTOBuilder;
+import com.framework.util.common.DateTimeUtil;
+import com.framework.util.common.StrUtil;
+import com.github.pagehelper.PageHelper;
+
+
+@Controller
+@RequestMapping("/TieZi")
+public class TieZiController {
+	private Logger logger = Logger.getLogger(TieZiController.class);
+	@Autowired
+	TieZiService tieZiService;
+
+	@RequestMapping("/forward")
+	public String forward(ModelMap map){
+		Map<String,Object> mapa=null;
+		mapa = tieZiService.queryInfosNum();
+		if (mapa != null && mapa.size() >= 0) {
+			map.put("count", mapa.get("count"));
+		}
+		return "bbs/tiezi";
+	}
+	/**
+	 * 发帖
+	 * @param map
+	 * @return
+	 */
+	@RequestMapping("/toFaTie")
+	public String toFaTie(ModelMap map,HttpServletRequest request){
+		if("1".equals(request.getSession().getAttribute("islogin"))){
+			return "bbs/fatie";
+		}else{
+			map.put("whichPage", "2");
+			return "common/login";
+		}
+	}
+
+
+	
+	/**
+	 * @Method_Name: queryInfos
+	 * @Description: 动态查询帖子
+	 * @date 2018-7-23
+	 * @param 	
+	 * @throws	
+	 * @author  zhanglei
+	 */
+	@RequestMapping("queryInfos")
+	@ResponseBody
+	public List<Map<String, Object>> queryInfos(String pageNo,String num){
+		List<Map<String, Object>> list = null;
+		PageHelper.startPage(Integer.parseInt(pageNo),Integer.parseInt(num));
+		list = tieZiService.queryInfos();
+		return list;
+	}
+	/**
+	 * 查看帖子详细信息
+	 * @return
+	 */
+	@RequestMapping("bbsDtail")
+	public String bbsDtail(String id,ModelMap mapa){
+		Map<String, Object> map = null;
+		map = tieZiService.getOneById(id);
+		mapa.put("map", map);
+		return "bbs/bbsdetail";
+	}
+	
+	/**
+	 * @Method_Name: add
+	 * @Description: 新增
+	 * @date 2018-3-27
+	 * @return  String
+	 * @param 	
+	 * @throws	
+	 * @author  ZhangLei
+	 */
+	@RequestMapping("add")
+	public String add(HttpServletRequest request,ModelMap map){
+		TieZi tieZi = (TieZi)DTOBuilder.getDTO(request, TieZi.class);
+		SysUser user = ContextUtil.getCurrentUser();
+		//给文章实体赋值
+		if (StrUtil.isNotBlank(tieZi)) {
+			tieZi.setCreatetime(DateTimeUtil.getDateTime());
+			tieZi.setCreateuser(user.getId());
+		}
+		try {
+			tieZiService.add(tieZi);
+		} catch (BusinessException e) {
+			logger.info(e);
+		}
+		return "redirect:/TieZi/forward";
+	}
+	
+	/**
+	 * @Method_Name: edit
+	 * @Description: 编辑
+	 * @date 2018-3-27
+	 * @return  String
+	 * @param 	
+	 * @throws	
+	 * @author  ZhangLei
+	 */
+	@RequestMapping("edit")
+	@ResponseBody
+	public String edit(HttpServletRequest request){
+		TieZi tieZi = (TieZi)DTOBuilder.getDTO(request, TieZi.class);//得到项目的信息
+		try {
+			tieZiService.edit(tieZi);
+		} catch (BusinessException e) {
+			logger.info(e);
+		}
+		return "redirect:TieZi/forward";
+	}
+	
+	/**
+	 * @Method_Name: del
+	 * @Description: 删除项目
+	 * @date 2018-3-27
+	 * @return  String
+	 * @param 	id文章id
+	 * @throws	
+	 * @author  ZhangLei
+	 */
+	@RequestMapping("del")
+	@ResponseBody
+	public String del(String id){
+		try {
+			tieZiService.delete(id);
+		} catch (BusinessException e) {
+			logger.info(e);
+		}
+		return "redirect:TieZi/forward";
+	}
+	
+	
+	
+}
